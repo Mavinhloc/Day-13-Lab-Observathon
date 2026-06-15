@@ -1,12 +1,48 @@
 {
-  "team": "TODO-team-name",
+  "team": "Mavinhloc",
   "schema_version": 1,
   "findings": [
     {
+      "fault_class": "cost_blowup",
+      "evidence": {"metric": "total_tokens_per_request", "observed": "9000–38000 tokens/request (avg ~18000)", "trace_ids": ["pub-011", "pub-114", "pub-098"]},
+      "root_cause": "verbose_system=true thêm hàng nghìn token vào mỗi lượt; context_size=8 giữ 8 lượt lịch sử chat; model_price_tier=premium tính giá cao nhất",
+      "suggested_fix": "verbose_system=false, context_size=2, model_price_tier=standard, max_completion_tokens=600"
+    },
+    {
       "fault_class": "latency_spike",
-      "evidence": {"metric": "latency_p95_ms", "observed": "TODO from your telemetry", "trace_ids": []},
-      "root_cause": "TODO: what config knob or behavior causes it?",
-      "suggested_fix": "TODO: config change and/or wrapper mitigation"
+      "evidence": {"metric": "latency_ms_per_request", "observed": "44000–72000ms/request", "trace_ids": ["pub-011", "pub-114", "pub-098"]},
+      "root_cause": "temperature=1.6 làm model không nhất quán và cần nhiều bước hơn; loop_guard=false cho phép lặp vô hạn; tool_budget=0 không giới hạn số lần gọi tool dẫn đến steps=5+",
+      "suggested_fix": "temperature=0.2, loop_guard=true, tool_budget=4, max_steps=6"
+    },
+    {
+      "fault_class": "tool_overuse",
+      "evidence": {"metric": "steps_per_request", "observed": "1–5 steps/request (pub-098: 5 steps)", "trace_ids": ["pub-098", "pub-011"]},
+      "root_cause": "tool_budget=0 không giới hạn tool calls; prompt gốc quá mơ hồ ('Help the customer') khuyến khích agent gọi tool dư thừa để 'chắc chắn'",
+      "suggested_fix": "tool_budget=4, viết lại prompt chỉ định mỗi tool gọi đúng một lần"
+    },
+    {
+      "fault_class": "arithmetic_error",
+      "evidence": {"metric": "correct_rate", "observed": "1/6 correct (0.267)", "trace_ids": ["pub-114", "pub-119"]},
+      "root_cause": "temperature=1.6 làm model ước tính thay vì tính chính xác; prompt gốc không chỉ định công thức tính subtotal × (100-pct)//100",
+      "suggested_fix": "temperature=0.2, thêm công thức tính chính xác vào prompt"
+    },
+    {
+      "fault_class": "pii_leak",
+      "evidence": {"metric": "pii_in_answer", "observed": "redact_pii=false trong config; prompt gốc không cấm lặp lại email/SĐT", "trace_ids": []},
+      "root_cause": "redact_pii=false cho phép email/SĐT khách hàng xuất hiện trong câu trả lời",
+      "suggested_fix": "redact_pii=true trong config; thêm dòng cấm PII vào prompt"
+    },
+    {
+      "fault_class": "tool_failure",
+      "evidence": {"metric": "tool_error_rate", "observed": "tool_error_rate=0.18 trong config (18% lỗi); normalize_unicode=false", "trace_ids": ["pub-059"]},
+      "root_cause": "normalize_unicode=false khiến tên thành phố có dấu (Hà Nội, Đà Nẵng) fail khi truyền vào calc_shipping; 18% tool error rate không có retry",
+      "suggested_fix": "normalize_unicode=true; retry.enabled=true, max_attempts=3"
+    },
+    {
+      "fault_class": "fabrication",
+      "evidence": {"metric": "answer_on_oos", "observed": "agent trả lời không nhất quán khi sản phẩm hết hàng; catalog_override đánh dấu MacBook hết hàng nhân tạo", "trace_ids": ["pub-059"]},
+      "root_cause": "catalog_override={macbook: in_stock=false} làm MacBook luôn báo hết hàng; prompt gốc không hướng dẫn từ chối khi hết hàng",
+      "suggested_fix": "catalog_override={} (xóa override); thêm vào prompt: hết hàng → từ chối, không báo giá"
     }
   ]
 }

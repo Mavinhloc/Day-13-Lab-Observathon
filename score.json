@@ -1,0 +1,21 @@
+{
+  "team": "Mavinhloc",
+  "phase": "public",
+  "headline": 92.24,
+  "sub": {
+    "correct": 0.87,
+    "quality": 0.922,
+    "error": 1.0,
+    "latency": 0.0,
+    "cost": 0.6961,
+    "drift": 0.0,
+    "prompt": 0.9215
+  },
+  "diag_f1": 0.753,
+  "n": 10,
+  "n_correct": 7,
+  "judge_mode": "offline",
+  "weights_hash": "e81a8ed58d93",
+  "key_hash": "9a800fa6968d",
+  "sig": "4396f4f782e30261b11f2876ae6086de92e78b8aaf31ef7dd991196fd343f87f"
+}

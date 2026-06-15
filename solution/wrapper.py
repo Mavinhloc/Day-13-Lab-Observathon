@@ -24,10 +24,27 @@ from __future__ import annotations
 
 
 def mitigate(call_next, question, config, context):
-    # TODO: add observability here (log latency, tokens, cost, errors, PII, tool counts).
-    # TODO: add mitigations (retry on error, cache repeats, route cheap, reset drifting
-    #       sessions, validate arithmetic, sanitize order notes, redact PII...).
-    # TODO: optionally route a better system prompt:
-    #       conf = dict(config); conf["system_prompt"] = "..."; return call_next(question, conf)
-    result = call_next(question, config)        # <-- passthrough stub: replace me
-    return result
+    import time, sys
+    qid = context.get("qid", "?")
+    turn = context.get("turn_index", "?")
+    t0 = time.time()
+    try:
+        result = call_next(question, config)
+        meta = result.get("meta", {}) if result else {}
+        wall_ms = int((time.time() - t0) * 1000)
+        latency_ms = meta.get("latency_ms", wall_ms)
+        usage = meta.get("usage", {})
+        tokens = usage.get("total_tokens", "?")
+        tools = meta.get("tools_used", [])
+        steps = result.get("steps", "?") if result else "?"
+        status = result.get("status", "?") if result else "?"
+        print(
+            f"[obs] qid={qid} turn={turn} status={status} steps={steps} "
+            f"latency={latency_ms}ms tokens={tokens} tools={len(tools)}",
+            file=sys.stderr, flush=True
+        )
+        return result
+    except Exception as e:
+        wall_ms = int((time.time() - t0) * 1000)
+        print(f"[obs] qid={qid} turn={turn} ERROR {type(e).__name__} wall={wall_ms}ms: {e}", file=sys.stderr, flush=True)
+        raise

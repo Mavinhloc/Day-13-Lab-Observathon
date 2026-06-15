@@ -1,21 +1,21 @@
 {
   "team": "Mavinhloc",
-  "phase": "public",
-  "headline": 92.24,
+  "phase": "private",
+  "headline": 66.54,
   "sub": {
-    "correct": 0.87,
-    "quality": 0.922,
-    "error": 1.0,
+    "correct": 0.5042,
+    "quality": 0.6452,
+    "error": 0.8333,
     "latency": 0.0,
-    "cost": 0.6961,
+    "cost": 0.358,
     "drift": 0.0,
-    "prompt": 0.9215
+    "prompt": 0.6923
   },
-  "diag_f1": 0.753,
-  "n": 10,
-  "n_correct": 7,
+  "diag_f1": 0.711,
+  "n": 24,
+  "n_correct": 8,
   "judge_mode": "offline",
   "weights_hash": "e81a8ed58d93",
-  "key_hash": "9a800fa6968d",
-  "sig": "4396f4f782e30261b11f2876ae6086de92e78b8aaf31ef7dd991196fd343f87f"
+  "key_hash": "7e3905b75db0",
+  "sig": "0af077ee9072715f0143d72ab5b4fa9ff9cf48349a3562bc4f538283f0f83e29"
 }
